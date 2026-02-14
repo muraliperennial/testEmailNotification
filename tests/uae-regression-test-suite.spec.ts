@@ -23,6 +23,6 @@ await loginPage.tearDown()
 
 test("Validate login, navigation to dashboard and logout functionality", async({page})=>{
   const loginPage= new LoginPage(page)
-  await loginPage.login( 'mayur.telke+receiveram@perennialsys.com','12345678@aA')
+  await loginPage.login( process.env.username as string,process.env.password as string)
   await loginPage.logout()
 })
