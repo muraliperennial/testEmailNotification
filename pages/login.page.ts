@@ -18,7 +18,7 @@ export class LoginPage {
   }
 
   async setUp(){
-    await this.page.goto(process.env.UAT as string);
+    await this.page.goto('https://ae.covoro.ai/login');
   }
 
   async tearDown(){
