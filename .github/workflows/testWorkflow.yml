@@ -1,33 +1,69 @@
 name: Daily Test Run
 
 on:
-  schedule:
-    - cron: '0 9 * * *'  # runs daily at 9 AM UTC
+  #schedule:
+  #  - cron: '0 9 * * *'  # runs daily at 9 AM UTC
   workflow_dispatch:
 
-permissions:
-  contents: read
-  issues: write  
-
+ 
 jobs:
-  run-tests:
+  gst-uae-tests:
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.57.0-noble
+
+    permissions:
+      contents: read
+      issues: write 
+
+    env:
+        ST_USERNAME: ${{ secrets.USERNAME }}
+        ST_USERNAME: ${{ secrets.PASSWORD }}
+        ST_USERNAME: ${{ secrets.BOT_USERNAME }}
+        ST_USERNAME: ${{ secrets.BOT_PASSWORD }}
 
     steps:
-      - uses: actions/checkout@v4
 
-      - name: Run tests
-        run: |
-          echo "Running daily tests..."
-          exit 0
-     
-      - name: Create summary issue
-        uses: actions/github-script@v7
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Playwright
+        run: npm ci --ignore-scripts 
+        
+      - name: Run Playwright tests in Docker
+        run: npx playwright test 
+        
+      - name: Parse report (JS version)
+        id: parse
+        if: ${{ always() }}
+        run: node utilities/parse-report.js
+
+      - name: Send Email with HTML Reports
+        if: ${{ always() }}
+        uses: dawidd6/action-send-mail@v3
         with:
-          script: |
-            github.rest.issues.create({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              title: "Daily Test Summary",
-              body: "✅ Passed: 12\n❌ Failed: 3"
-            });
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.BOT_USERNAME }}
+          password: ${{ secrets.BOT_PASSWORD }}
+          subject: "[COVORO UAE DEMO] Daily Sanity Test Report - Passed: ${{ steps.parse.outputs.passed }}, Failed: ${{ steps.parse.outputs.failed }}, Skipped: ${{ steps.parse.outputs.skipped }}"
+          body: |
+            
+            Hi Team,
+
+            Please find the summary of test execution below and find the attached report for more details:
+            Environment: COVORO UAE
+
+            Playwright Execution Summary:
+            ---------------------------------
+            Passed: ${{ steps.parse.outputs.passed }}
+            Failed: ${{ steps.parse.outputs.failed }}
+            Skipped: ${{ steps.parse.outputs.skipped }}
+            
+            View full run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+          to: murali.ambekar@perennialsys.com
+          cc:  
+          from: ${{ secrets.BOT_USERNAME }}
+          attachments:
+
