@@ -21,8 +21,15 @@ const loginPage= new LoginPage(page)
 await loginPage.tearDown()
 })
 
-test("Validate login, navigation to dashboard and logout functionality", async({page})=>{
+test("TC001: Validate login, navigation to dashboard and logout functionality", async({page})=>{
+  console.log(process.env.USERNAME as string)
   const loginPage= new LoginPage(page)
-  await loginPage.login( process.env.username as string,process.env.password as string)
+  await loginPage.login( process.env.USERNAME as string,process.env.PASSWORD as string)
+  await loginPage.logout()
+})
+
+test("TC002: Validate login functionality", async({page})=>{
+  const loginPage= new LoginPage(page)
+  await loginPage.login( process.env.USERNAME as string,process.env.PASSWORD as string)
   await loginPage.logout()
 })

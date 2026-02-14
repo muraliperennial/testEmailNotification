@@ -46,7 +46,7 @@ jobs:
           server_port: 587
           username: ${{ secrets.BOT_USERNAME }}
           password: ${{ secrets.BOT_PASSWORD }}
-          subject: "[COVORO UAE DEMO] Daily Sanity Test Report - Passed: ${{ steps.parse.outputs.passed }}, Failed: ${{ steps.parse.outputs.failed }}, Skipped: ${{ steps.parse.outputs.skipped }}"
+          subject: "[COVORO UAE DEMO] Daily Sanity Test Report - Passed:  ${{ env.PASSED_COUNT }}, Failed: ${{ env.FAILED_COUNT }}, Skipped: ${{ env.SKIPPED_COUNT }}"
           body: |
             
             Hi Team,
@@ -54,11 +54,15 @@ jobs:
             Please find the summary of test execution below and find the attached report for more details:
             Environment: COVORO UAE
 
-            Playwright Execution Summary:
-            ---------------------------------
-            Passed: ${{ steps.parse.outputs.passed }}
-            Failed: ${{ steps.parse.outputs.failed }}
-            Skipped: ${{ steps.parse.outputs.skipped }}
+            ✅ Passed:  ${{ env.PASSED_COUNT }}
+            ❌ Failed:  ${{ env.FAILED_COUNT }}
+            ⏩ Skipped: ${{ env.SKIPPED_COUNT }}
+
+            Failed Test Titles:
+            ${{ env.FAILED_LIST }}
+
+            Passed Test Titles:
+            ${{ env.PASSED_LIST }}
             
             View full run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
