@@ -1,0 +1,83 @@
+name: Daily Test Run
+
+on:
+      
+  workflow_dispatch:
+
+ 
+jobs:
+  gst-uae-tests:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.58.2-noble
+
+    permissions:
+      contents: read
+      issues: write 
+
+    env:
+        DEMO_USERNAME: ${{ secrets.DEMO_USERNAME }}
+        DEMO_PASSWORD: ${{ secrets.DEMO_PASSWORD }}
+        BOT_USERNAME: ${{ secrets.BOT_USERNAME }}
+        BOT_PASSWORD: ${{ secrets.BOT_PASSWORD }}
+
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Playwright
+        run: npm ci --ignore-scripts 
+        
+      - name: Run Playwright tests in Docker
+        run: npx playwright test 
+        
+      - name: Parse report (JS version)
+        id: parse
+        if: ${{ always() }}
+        run: node utilities/parse-report.js
+
+      - name: Upload Playwright Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report # This is the name of the zip file on GitHub          
+          path: playwright-report/
+          retention-days: 2  
+
+      - name: Send Email with HTML Reports
+        if: ${{ always() }}
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.BOT_USERNAME }}
+          password: ${{ secrets.BOT_PASSWORD }}
+          subject: "[COVORO UAE DEMO] Daily Sanity Test Report - Passed:  ${{ env.PASSED_COUNT }}, Failed: ${{ env.FAILED_COUNT }}, Skipped: ${{ env.SKIPPED_COUNT }}"
+          body: |
+            
+            Hi Team,
+
+            Please find the summary of test execution below and find the attached report for more details:
+            Environment: COVORO UAE
+
+            ✅ Passed:  ${{ env.PASSED_COUNT }}
+            ❌ Failed:  ${{ env.FAILED_COUNT }}
+            ⏩ Skipped: ${{ env.SKIPPED_COUNT }}
+
+            Failed Test Titles:
+            ${{ env.FAILED_LIST }}
+
+            Passed Test Titles:
+            ${{ env.PASSED_LIST }}
+            
+            View full run: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            Regards
+            QA Automation Team 
+
+          to: murali.ambekar@perennialsys.com
+          cc:  
+          from: ${{ secrets.BOT_USERNAME }}
+          attachments:
+
