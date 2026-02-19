@@ -20,10 +20,10 @@ test.beforeEach(async({page})=>{
   await loginPage.setUp()
 })
 
-test.afterAll(async({page})=>{
-const loginPage= new LoginPage(page)
-await loginPage.tearDown()
-})
+// test.afterAll(async({page})=>{
+// const loginPage= new LoginPage(page)
+// await loginPage.tearDown()
+// })
 
 test("TC001: Validate login, navigation to dashboard and logout functionality", async({page})=>{
   const Covoro= new COVORO(page)
