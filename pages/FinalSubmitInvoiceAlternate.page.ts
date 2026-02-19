@@ -64,7 +64,7 @@ export class FinalSubmitInvoiceAlternate {
    */
   async getStatusTillSubmitted(maxAttempts: number = 30, pollIntervalMs: number = 5000): Promise<string[]> {
     const statuses: string[] = [];
-    const submittedPattern = /submitted/i;
+    const submittedPattern = /Submitted/i;
     for (let i = 0; i < maxAttempts; i++) {
       await this.page.waitForTimeout(pollIntervalMs);
       const statusEl = this.page.locator(this.statusCellXpath);
@@ -82,7 +82,7 @@ export class FinalSubmitInvoiceAlternate {
 
   async getStatusTillDelivered(maxAttempts: number = 30, pollIntervalMs: number = 5000): Promise<string[]> {
     const statuses: string[] = [];
-    const submittedPattern = /delivered/i;
+    const submittedPattern = /Delivered/i;
     for (let i = 0; i < maxAttempts; i++) {
       await this.page.waitForTimeout(pollIntervalMs);
       const statusEl = this.page.locator(this.statusCellXpath);

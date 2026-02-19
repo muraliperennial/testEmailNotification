@@ -21,7 +21,7 @@ export class InvoicePage {
 
   /** Xpath for file upload status text (span showing status until completed). */
   private readonly uploadStatusXpath =
-    '//*[@id="root"]/div/div[2]/div[2]/div[3]/div[2]/div[1]/div/div[2]/div/div[7]/span[3]';
+    "//*[@class='content']/span[text()='Status']/../span[3]";
 
   /** Refresh button for file upload status (id download-error-file; click parent for reliability). */
   private readonly uploadStatusRefreshXpath = '//*[@id="download-error-file"]';

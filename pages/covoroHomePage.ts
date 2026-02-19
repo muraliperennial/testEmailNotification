@@ -5,8 +5,8 @@ import { InvoicePage } from '../pages/invoice.page';
 import { FinalSubmitInvoiceAlternate } from '../pages/FinalSubmitInvoiceAlternate.page';
 
 export class COVORO {
-    private invoiceNumber: string | undefined;
-    private finalStatus: string | undefined;
+    public static invoiceNumber: string | undefined;
+    public static finalStatus: string | undefined;
 
     constructor(private page: Page) {
 
@@ -31,8 +31,8 @@ export class COVORO {
     const invoice = new InvoicePage(this.page);
 
     await invoice.clickCreateInvoice();
-    this.invoiceNumber = await invoice.enterInvoiceNumber(0);
-    console.log(`Invoice number entered: ${this.invoiceNumber}`);
+    COVORO.invoiceNumber = await invoice.enterInvoiceNumber(0);
+    console.log(`Invoice number entered: ${COVORO.invoiceNumber}`);
     await invoice.selectTxnTypeByIndex(0);
     await this.page.locator('//button[.//text()[normalize-space()="Save"]]').click();
     await this.page.waitForTimeout(1000);
@@ -44,7 +44,7 @@ export class COVORO {
     await invoice.selectPaymentMeans();
     await invoice.selectTodayDate();
     await this.page.locator('//button[.//text()[normalize-space()="Save"]]').click();
-    return { invoice: this.invoiceNumber, status:this.finalStatus };
+    return { invoice: COVORO.invoiceNumber, status:COVORO.finalStatus };
   }
 
   async verifyFilter(){
@@ -52,125 +52,50 @@ export class COVORO {
     const dashboard = new DashboardPage(this.page);
     const invoice = new InvoicePage(this.page);
     await invoice.submitInvoice();
-    const finalSubmit = new FinalSubmitInvoiceAlternate(this.page, this.invoiceNumber!);
+    const finalSubmit = new FinalSubmitInvoiceAlternate(this.page, COVORO.invoiceNumber!);
     await finalSubmit.clickFilter();
     await this.page.waitForTimeout(1000);
     await finalSubmit.enterInvoiceNumber();
     await finalSubmit.clickApply();
     await this.page.waitForTimeout(1000);
-    this.finalStatus = 'Filter applied';
-    return { invoice: this.invoiceNumber, status:this.finalStatus };
+    COVORO.finalStatus = 'Filter applied';
+    return { invoice: COVORO.invoiceNumber, status:COVORO.finalStatus };
   }
 
 
   async submitInvoice() {
-    const finalSubmit = new FinalSubmitInvoiceAlternate(this.page, this.invoiceNumber!);
+    const finalSubmit = new FinalSubmitInvoiceAlternate(this.page, COVORO.invoiceNumber!);
     await finalSubmit.clickFinalSubmit();
-    this.finalStatus = 'Submitted';
-    return { invoice: this.invoiceNumber, status:this.finalStatus };
+    COVORO.finalStatus = 'Submitted';
+    return { invoice: COVORO.invoiceNumber, status:COVORO.finalStatus };
   }
 
   async verifyTillDelivered(){
-    const finalSubmit = new FinalSubmitInvoiceAlternate(this.page, this.invoiceNumber!);
+    const finalSubmit = new FinalSubmitInvoiceAlternate(this.page, COVORO.invoiceNumber!);
     await finalSubmit.getStatusTillSubmitted();
     await finalSubmit.getStatusTillDelivered();
     await finalSubmit.verifyInvoiceStatusAfterFinalSubmit(/delivered/i);
-    this.finalStatus = 'Delivered';
-    return { invoice: this.invoiceNumber, status:this.finalStatus };
+    COVORO.finalStatus = 'Delivered';
+    return { invoice: COVORO.invoiceNumber, status:COVORO.finalStatus };
   }
 
-
-
-
-
-
-
-
-  /**
- * UAE Regression v1 – 6 cases (TC002–TC004 merged).
- * throughStep: 1=Login, 2=Create Invoice+Buyer+Item, 3=Filter, 4=Submit, 5=Final Status, 6=File Upload.
- 
-async function runStepsUpToV1(
-  page: Page,
-  throughStep: number
-): Promise<{ invoiceNumber?: string; finalStatus?: string }> {
-  const log = (msg: string, url?: string) => {
-    console.log(`[LOG] ${msg} | URL: ${url ?? page.url()}`);
-  };
-  const login = new LoginPage(page);
-  const dashboard = new DashboardPage(page);
-  const invoice = new InvoicePage(page);
-  let invoiceNumber: string | undefined;
-  let finalStatus: string | undefined;
-
-  // Step 1: Login
-  if (throughStep >= 1) {
-    log('Navigating to login page', BASE_URL);
-    await login.goto(BASE_URL);
-    await login.login('mayur.telke+receiveram@perennialsys.com', '12345678@aA');
-    log('Opening dashboard');
-    await dashboard.openDashboard();
-  }
-
-  // Step 2 (merged): Create Invoice + Search Buyer + Search Item
-  if (throughStep >= 2) {
-    await invoice.clickCreateInvoice();
-    invoiceNumber = await invoice.enterInvoiceNumber(0);
-    log(`Invoice number entered: ${invoiceNumber}`);
-    await invoice.selectTxnTypeByIndex(0);
-    await page.locator('//button[.//text()[normalize-space()="Save"]]').click();
-    await page.waitForTimeout(1000);
-    await invoice.fillSellerVatIdentifier('102303340122203');
-    await page.locator('//button[.//text()[normalize-space()="Save"]]').click();
-    await invoice.selectBuyer('Desai Brothers');
-    await invoice.addItem();
-    await page.locator('//button[.//text()[normalize-space()="Save"]]').click();
-    await invoice.selectPaymentMeans();
-    await invoice.selectTodayDate();
-    await page.locator('//button[.//text()[normalize-space()="Save"]]').click();
-    finalStatus = 'Created';
-  }
-
-  // Step 3: Filter Functionality
-  if (throughStep >= 3) {
-    
-    await invoice.submitInvoice();
-    const finalSubmit = new FinalSubmitInvoiceAlternate(page, invoiceNumber!);
-    await finalSubmit.clickFilter();
-    await page.waitForTimeout(1000);
-    await finalSubmit.enterInvoiceNumber();
-    await finalSubmit.clickApply();
-    await page.waitForTimeout(1000);
-    finalStatus = 'Filter applied';
-  }
-
-  // Step 4: Submit Invoice
-  if (throughStep >= 4) {
-    const finalSubmit = new FinalSubmitInvoiceAlternate(page, invoiceNumber!);
-    await finalSubmit.clickFinalSubmit();
-    finalStatus = 'Submitted';
-  }
-
-  // Step 5: Final Status – verify till "Delivered"
-  if (throughStep >= 5) {
-    const finalSubmit = new FinalSubmitInvoiceAlternate(page, invoiceNumber!);
-    await finalSubmit.getStatusTillDelivered();
-    await finalSubmit.verifyInvoiceStatusAfterFinalSubmit(/delivered/i);
-    finalStatus = 'Delivered';
-  }
-
-  // Step 6: File Upload
-  if (throughStep >= 6) {
+  async verifyUploadInvoice(){
+    const invoice = new InvoicePage(this.page);
     await invoice.clickUploadInvoice();
-    await page.waitForTimeout(1000);
-    await invoice.selectAndUploadExcelFile(EXCEL_PATH);
-    await page.waitForTimeout(5000);
-    await invoice.getUploadStatusText();
+    await this.page.waitForTimeout(1000);
+    await invoice.selectAndUploadExcelFile('./testData/ValidforAdmin4.xlsx');
+    await this.page.waitForTimeout(5000);
+    const status= await invoice.getUploadStatusText();
+    return { invoice: COVORO.invoiceNumber, status };
   }
 
-  return { invoiceNumber, finalStatus };
+
+  async logout(){
+    await this.page.locator('#userDetails').click()
+    await this.page.locator("div[class^='sign-out']").click()
+    await this.page.locator('#email-label').isVisible()
+    console.log('Logout Successful')
+  }
+  
 }
   
-  */
-
-}
