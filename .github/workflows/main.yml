@@ -4,7 +4,7 @@ on:
   schedule:
     # 01:30 UTC = 07:00 AM IST
     # 1-5 = Monday to Friday
-    - cron: '30 2 * * 1-5'
+    - cron: '00 2 * * 1-5'
     
   workflow_dispatch:
 
@@ -80,7 +80,7 @@ jobs:
             Regards
             QA Automation Team 
 
-          to: mayur.telke@perennialsys.com, murali.ambekar@perennialsys.com
+          to: mayur.telke@perennialsys.com, murali.ambekar@perennialsys.com, vishal.ghaste@perennialsys.com, kishor.mane@perennialsys.com, pratik.gondane@gsthero.com, prashant.bharti@perennialsys.com
           cc: sanket.kedar@perennialsys.com, varsha.mane@perennialsys.com, nilesh@perennialsys.com,   
           from: ${{ secrets.BOT_USERNAME }}
           attachments:
