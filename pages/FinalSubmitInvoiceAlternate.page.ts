@@ -80,6 +80,24 @@ export class FinalSubmitInvoiceAlternate {
     return statuses;
   }
 
+  async getStatusTillDelivered(maxAttempts: number = 30, pollIntervalMs: number = 5000): Promise<string[]> {
+    const statuses: string[] = [];
+    const submittedPattern = /delivered/i;
+    for (let i = 0; i < maxAttempts; i++) {
+      await this.page.waitForTimeout(pollIntervalMs);
+      const statusEl = this.page.locator(this.statusCellXpath);
+      await statusEl.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
+      const text = (await statusEl.textContent())?.trim() ?? '';
+      statuses.push(text);
+      console.log(`[Status ${i + 1}] ${text}`);
+      if (submittedPattern.test(text)) {
+        return statuses;
+      }
+      await this.clickRefresh();
+    }
+    return statuses;
+  }
+
   /** One-call flow: filter → enter invoice → apply → final submit (no Options dropdown). */
   async filterAndSubmitInvoice() {
     await this.clickFilter();
